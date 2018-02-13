@@ -1,0 +1,31 @@
+
+version: "3"
+services:
+    node:
+        image: ethereum/client-go:alpine
+        ports:
+            - 8545:8545
+        expose:
+            - "30303"
+        # depends_on:
+        #     - eth
+        external_links:
+            - exchange_boot_1
+        volumes:
+            - ./eth-genesis.json:/root/genesis.json
+            - ./run-eth.sh:/root/run.sh
+            - ./wait.sh:/root/wait.sh
+            - ./bootnodes.txt:/root/bootnodes.txt
+            - ./trusted-nodes.json:/root/.ethereum/static-nodes.json
+        # entrypoint: "/bin/sh"
+        # entrypoint: "/root/run.sh"
+        entrypoint: "/root/wait.sh exchange_boot_1:30303 -t 20 -- /root/run.sh"
+
+        networks:
+            - exchange_default
+            - default
+networks:
+    exchange_default:
+        external: true
+
+# Ports are Host:Container

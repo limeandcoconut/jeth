@@ -1,0 +1,111 @@
+version: "3"
+services:
+    boot:
+        image: ethereum/client-go:alpine
+        expose:
+            - "30303"
+            - "8545"
+        volumes:
+            - ./eth-genesis.json:/root/genesis.json
+            - ./run.sh:/root/run.sh
+            - ./nodekey.txt:/root/nodekey.txt
+            - connection-data:/tmp
+        entrypoint: "/root/run.sh"
+    eth:
+        # This one has the whole thing. Use `$ geth` in the cli.
+        # image: ethereum/client-go:alltools-latest
+        # This one has just geth. Use `$ /geth` in the cli.
+        image: ethereum/client-go:alpine
+        depends_on:
+            - "boot"
+        expose:
+            - "30303"
+        volumes:
+            - ./eth-genesis.json:/root/genesis.json
+            - ./run.sh:/root/run.sh
+            - ./wait.sh:/root/wait.sh
+            - ./nodekey.txt:/root/nodekey.txt
+            - ./trusted-nodes.json:/root/.ethereum/static-nodes.json
+            - connection-data:/tmp
+        # entrypoint: "/bin/sh"
+        entrypoint: "/root/wait.sh boot:30303 -t 20 -- /root/run.sh"
+
+volumes:
+    connection-data:
+        driver: local
+        driver_opts:
+            type: tmpfs
+            device: tmpfs
+            o: "size=10m"
+
+
+    # BTC
+    # bitcoin:
+    #     image: ruimarinho/bitcoin-core:0.15.1-alpine
+    #     container_name: bitcoin
+    #     ports:
+    #         # - "8332:8332"
+    #         # - "3055:18444"
+    #         - "3001:3001"
+    #         # - "18332:18332"
+    #         # - "18333:18333"
+    #     volumes:
+    #         - ./wallet-data/bitcoin-data:/home/bitcoin/.bitcoin
+    #     command:
+    #         -printtoconsole
+    #         -server=1
+    #         -rpcport=3001
+    #         -rpcpassword=btcpassword
+    #         -rpcuser=btcuser
+    #         -rpcallowip=0.0.0.0/0
+    #         -regtest=1
+    #         -port=18555
+    #         # -prune=1024
+    #         # -connect=bitcoin2:18555
+    # bitcoin2:
+    #     image: ruimarinho/bitcoin-core:0.15.1-alpine
+    #     container_name: bitcoin2
+    #     ports:
+    #         # - "3056:18444"
+    #         # - "8333:8333"
+    #         - "3002:3002"
+    #         # - "18332:18332"
+    #         # - "18333:18333"
+    #     volumes:
+    #         - ./wallet-data/bitcoin-data-2:/home/bitcoin/.bitcoin
+    #     command:
+    #         -printtoconsole
+    #         -server=1
+    #         -rpcport=3002
+    #         -rpcpassword=btcpassword
+    #         -rpcuser=btcuser
+    #         -rpcallowip=0.0.0.0/0
+    #         -regtest=1
+    #         -port=18555
+    #         # -prune=1024
+    #         # -connect=bitcoin:18555
+    # bitcoin3:
+    #     image: ruimarinho/bitcoin-core:0.15.1-alpine
+    #     container_name: bitcoin3
+    #     ports:
+    #         # - "3056:18444"
+    #         # - "8333:8333"
+    #         - "3003:3003"
+    #         # - "18332:18332"
+    #         # - "18333:18333"
+    #     volumes:
+    #         - ./wallet-data/bitcoin-data-3:/home/bitcoin/.bitcoin
+    #     command:
+    #         -printtoconsole
+    #         -server=1
+    #         -rpcport=3003
+    #         -rpcpassword=btcpassword
+    #         -rpcuser=btcuser
+    #         -rpcallowip=0.0.0.0/0
+    #         -regtest=1
+    #         -port=18555
+    #         -sync=true
+    #         # -prune=1024
+    #         # -connect=bitcoin:18555
+
+# Ports are Host:Container
